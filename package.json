@@ -19,6 +19,7 @@
   },
   "types": "./dist-types/index.d.ts",
   "scripts": {
+    "prebuild": "npm audit --omit=dev --audit-level=moderate",
     "build": "tsc",
     "dev": "tsc --watch",
     "lint": "eslint src",
