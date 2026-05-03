@@ -41,6 +41,14 @@
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"
   },
+  "overrides": {
+    "tar":"^7.5.13",
+    "minimatch":"^3.1.5",
+    "lodash-es":"^4.18.1",
+    "lodash":"^4.18.1",
+    "postcss":"^8.5.13",
+    "brace-expansion":"^1.1.14"
+  },
   "files": [
     "dist",
     "dist-types",
