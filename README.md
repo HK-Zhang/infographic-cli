@@ -1,8 +1,8 @@
-# infographic-cli
+# infog-cli
 
-[![npm version](https://badge.fury.io/js/infographic-cli.svg)](https://www.npmjs.com/package/infographic-cli)
+[![npm version](https://badge.fury.io/js/infog-cli.svg)](https://www.npmjs.com/package/infog-cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js Version](https://img.shields.io/node/v/infographic-cli.svg)](https://www.npmjs.com/package/infographic-cli)
+[![Node.js Version](https://img.shields.io/node/v/infog-cli.svg)](https://www.npmjs.com/package/infog-cli)
 
 Command-line interface for [AntV Infographic](https://github.com/antvis/Infographic) - instantly create stunning SVG infographics from simple declarative syntax. Render from strings, files, or stdin.
 
@@ -10,7 +10,7 @@ Command-line interface for [AntV Infographic](https://github.com/antvis/Infograp
 
 ```bash
 # Install
-npm install -g infographic-cli
+npm install -g infog-cli
 
 # Render from string (quickest for testing)
 ifgc -s "infographic list-row-simple-horizontal-arrow
@@ -30,7 +30,7 @@ ifgc template
 ## Installation
 
 ```bash
-npm install -g infographic-cli
+npm install -g infog-cli
 ```
 
 This installs two commands: `ifgc` (short) and `infographic` (long).
@@ -191,7 +191,7 @@ Learn more about the declarative infographic syntax at [antvis/Infographic](http
 
 ## License
 
-MIT &copy; 2026 [lyw405](https://github.com/HK-Zhang)
+MIT &copy; 2026 [HK-Zhang](https://github.com/HK-Zhang)
 
 ## Changelog
 
