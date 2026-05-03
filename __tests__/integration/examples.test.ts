@@ -36,19 +36,19 @@ describe('SSR Examples Tests', () => {
     }
   });
 
-  afterEach(() => {
-    // Clean up generated SVG files
-    try {
-      const files = readdirSync(outputDir);
-      files.forEach(file => {
-        if (file.endsWith('.svg')) {
-          unlinkSync(join(outputDir, file));
-        }
-      });
-    } catch {
-      // Ignore cleanup errors
-    }
-  });
+  // afterEach(() => {
+  //   // Clean up generated SVG files
+  //   try {
+  //     const files = readdirSync(outputDir);
+  //     files.forEach(file => {
+  //       if (file.endsWith('.svg')) {
+  //         unlinkSync(join(outputDir, file));
+  //       }
+  //     });
+  //   } catch {
+  //     // Ignore cleanup errors
+  //   }
+  // });
 
   for (const file of exampleFiles) {
     it(`should render ${file}`, () => {
@@ -61,7 +61,7 @@ describe('SSR Examples Tests', () => {
       expect(input.length).toBeGreaterThan(0);
 
       // Render the infographic
-      execSync(CLI + ` render -i ${inputFile} -o ${outputFile}`);
+      execSync(CLI + ` -i ${inputFile} -o ${outputFile}`);
 
       // Verify output file was created
       expect(existsSync(outputFile)).toBe(true);
@@ -89,7 +89,7 @@ describe('Visual Output Preview', () => {
     const inputFile = join(examplesDir, '01-basic-list.txt');
     const outputFile = join(outputDir, '01-basic-list.svg');
 
-    execSync(CLI + ` render -i ${inputFile} -o ${outputFile}`);
+    execSync(CLI + ` -i ${inputFile} -o ${outputFile}`);
 
     const content = readFileSync(outputFile, 'utf-8');
 

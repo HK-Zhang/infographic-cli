@@ -2,32 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.0] - 2025-01-20
+## [0.0.1] - 2026-05-03
 
 ### Added
-- Initial release of `infographic-cli`
-- Simple command `ifgc` to render infographics from .ifgc files to SVG
-- Support for 236+ built-in infographic templates
-- `template` command to list all available templates
-- Theme support (`--theme` option)
-- Background color customization (`--background` option)
-- Config file support (`--config` option)
-- Stdin input support for AI integration
-- Comprehensive test suite (26 tests)
 
-### Features
-- Render from file: `ifgc -i input.ifgc -o output.svg`
-- Render from stdin: `echo "..." | ifgc -o output.svg`
-- List templates: `ifgc template`
-- Automatic output file naming (defaults to input.svg)
-- Quiet mode for script usage (`--quiet`)
+- Initial release of `infog-cli` — a command-line tool for generating SVG infographics from declarative syntax.
+- CLI commands: `render` and `serve` for rendering infographics to SVG or starting a local preview server.
+- Support for rendering from strings, files, or stdin.
+- Theme configuration support for customizing infographic appearance.
+- Integration with `@antv/infographic` for infographic generation.
+- Dual CLI aliases: `ifgc` and `infographic`.
+- Prebuild npm audit check for security validation.
+- Comprehensive test suite using Vitest.
 
-### Dependencies
-- `@antv/infographic` ^0.2.11
-- `chalk` ^5.4.1
-- `commander` ^12.1.0
+### Changed
 
-[0.1.0]: https://github.com/lyw405/infographic-cli/releases/tag/v0.1.0
+- Refactored CLI command syntax for improved usability.
+- Updated project name references in README and LICENSE to `infog-cli`.
+
+### Fixed
+
+- Improved file imports and project metadata.
+
+[0.0.1]: https://github.com/HK-Zhang/infographic-cli/releases/tag/v0.0.1
