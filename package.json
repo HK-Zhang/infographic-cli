@@ -32,7 +32,7 @@
     "commander": "^12.1.0"
   },
   "devDependencies": {
-    "@types/node": "^24.3.1",
+    "@types/node": "^24.12.2",
     "@typescript-eslint/eslint-plugin": "^8.53.1",
     "@typescript-eslint/parser": "^8.53.1",
     "eslint": "^9.39.2",
@@ -64,10 +64,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lyw405/infographic-cli.git"
+    "url": "git+https://github.com/HK-Zhang/infographic-cli.git"
   },
-  "homepage": "https://github.com/lyw405/infographic-cli#readme",
+  "homepage": "https://github.com/HK-Zhang/infographic-cli#readme",
   "bugs": {
-    "url": "https://github.com/lyw405/infographic-cli/issues"
+    "url": "https://github.com/HK-Zhang/infographic-cli/issues"
   }
 }

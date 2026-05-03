@@ -1,4 +1,4 @@
-import fs from 'fs/promises';
+import fs from 'node:fs/promises';
 import { renderToString } from '@antv/infographic/ssr';
 import { error, info, success } from '../utils/error.js';
 import { getInputData } from '../utils/input.js';
@@ -14,73 +14,81 @@ export interface RenderOptions {
   theme?: string;
 }
 
-export async function renderCommand(options: RenderOptions): Promise<void> {
-  const {
-    input,
-    string: stringInput,
-    output: userOutput,
-    quiet,
-    config: configFile,
-    theme,
-  } = options;
+type RenderConfig = NonNullable<Parameters<typeof renderToString>[1]>;
 
-  const log = quiet ? () => {} : info;
-
-  // Validate input - cannot use both input file and string
-  if (input && stringInput) {
+function validateOptions(options: RenderOptions): void {
+  if (options.input && options.string) {
     error('Cannot use both --input and --string options. Please use one.');
   }
+}
 
-  // Validate input file exists
-  if (input && input !== '-') {
-    try {
-      await fs.access(input);
-    } catch {
-      error(`Input file "${input}" doesn't exist`);
-    }
+async function validateInputFile(input: string | undefined): Promise<void> {
+  if (!input || input === '-') return;
+
+  try {
+    await fs.access(input);
+  } catch {
+    error(`Input file "${input}" doesn't exist`);
   }
+}
 
-  // Read config file if provided
-  let config: Record<string, unknown> = {};
-  if (configFile) {
-    try {
-      const configContent = await fs.readFile(configFile, 'utf-8');
-      config = JSON.parse(configContent);
-    } catch {
-      error(`Configuration file "${configFile}" is invalid or doesn't exist`);
-    }
+async function loadConfig(configFile: string | undefined): Promise<RenderConfig> {
+  if (!configFile) return {};
+
+  try {
+    const configContent = await fs.readFile(configFile, 'utf-8');
+    return JSON.parse(configContent) as RenderConfig;
+  } catch {
+    error(`Configuration file "${configFile}" is invalid or doesn't exist`);
   }
+}
 
-  // Merge CLI options with config
-  if (theme) config.theme = theme;
+function resolveOutput(userOutput: string | undefined, input: string | undefined): string {
+  if (userOutput === '-') return '/dev/stdout';
+  if (userOutput) return userOutput;
 
-  // Determine output file (always SVG)
-  let output = userOutput;
-  if (!output) {
-    const actualInput = input && input !== '-' ? input : undefined;
-    output = getDefaultOutput(actualInput);
-  } else if (output === '-') {
-    output = '/dev/stdout';
-  }
+  const actualInput = input && input !== '-' ? input : undefined;
+  return getDefaultOutput(actualInput);
+}
 
-  // Read input data
+async function prepareInputData(options: RenderOptions): Promise<string> {
   let inputData: string;
-  if (stringInput) {
-    // Convert \n to actual newlines and unescape other escape sequences
-    inputData = stringInput.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
+
+  if (options.string) {
+    inputData = options.string.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
   } else {
-    inputData = await getInputData(input && input !== '-' ? input : undefined);
+    const file = options.input && options.input !== '-' ? options.input : undefined;
+    inputData = await getInputData(file);
   }
 
   if (!inputData.trim()) {
     error('No input data provided');
   }
 
-  log(`Rendering infographic...`);
+  return inputData;
+}
+
+export async function renderCommand(options: RenderOptions): Promise<void> {
+  const { input, output: userOutput, quiet, config: configFile, theme } = options;
+
+  const log = quiet ? () => {} : info;
+
+  validateOptions(options);
+  await validateInputFile(input);
+
+  const config = await loadConfig(configFile);
+
+  if (theme) {
+    config.theme = theme;
+  }
+
+  const output = resolveOutput(userOutput, input);
+  const inputData = await prepareInputData(options);
+
+  log('Rendering infographic...');
 
   try {
-    // Render using SSR
-    const svgString = await renderToString(inputData, config as any);
+    const svgString = await renderToString(inputData, config);
 
     await writeOutput(output, svgString);
 

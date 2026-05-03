@@ -1,5 +1,5 @@
-import fs from 'fs/promises';
-import readline from 'readline';
+import fs from 'node:fs/promises';
+import readline from 'node:readline';
 
 export async function getInputData(inputFile: string | undefined): Promise<string> {
   if (inputFile) {

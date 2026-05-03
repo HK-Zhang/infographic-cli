@@ -191,7 +191,7 @@ Learn more about the declarative infographic syntax at [antvis/Infographic](http
 
 ## License
 
-MIT &copy; 2026 [lyw405](https://github.com/lyw405)
+MIT &copy; 2026 [lyw405](https://github.com/HK-Zhang)
 
 ## Changelog
 
