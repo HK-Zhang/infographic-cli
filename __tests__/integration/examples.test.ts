@@ -36,19 +36,19 @@ describe('SSR Examples Tests', () => {
     }
   });
 
-  afterEach(() => {
-    // Clean up generated SVG files
-    try {
-      const files = readdirSync(outputDir);
-      files.forEach(file => {
-        if (file.endsWith('.svg')) {
-          unlinkSync(join(outputDir, file));
-        }
-      });
-    } catch {
-      // Ignore cleanup errors
-    }
-  });
+  // afterEach(() => {
+  //   // Clean up generated SVG files
+  //   try {
+  //     const files = readdirSync(outputDir);
+  //     files.forEach(file => {
+  //       if (file.endsWith('.svg')) {
+  //         unlinkSync(join(outputDir, file));
+  //       }
+  //     });
+  //   } catch {
+  //     // Ignore cleanup errors
+  //   }
+  // });
 
   for (const file of exampleFiles) {
     it(`should render ${file}`, () => {

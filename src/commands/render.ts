@@ -14,6 +14,32 @@ export interface RenderOptions {
   theme?: string;
 }
 
+const themeConfig = {
+  colorPrimary: '#13204c',
+  colorBg: '#FFFFFF',
+  palette: [
+    '#a1d9f1',
+    '#36a0dc',
+    '#4d9b2e',
+    '#b22d1d',
+    '#13204c',
+    '#facf6c',
+    '#FFC06C',
+    '#e1f000',
+    '#9fffb2',
+  ],
+  item: {
+    label: {
+      'font-size': 10,
+      'line-height': 1
+    },
+    desc: {
+      'font-size': 8,
+      'line-height': 1
+    }
+  }
+};
+
 type RenderConfig = NonNullable<Parameters<typeof renderToString>[1]>;
 
 function validateOptions(options: RenderOptions): void {
@@ -80,6 +106,8 @@ export async function renderCommand(options: RenderOptions): Promise<void> {
 
   if (theme) {
     config.theme = theme;
+  }else{
+    config.themeConfig = themeConfig;
   }
 
   const output = resolveOutput(userOutput, input);

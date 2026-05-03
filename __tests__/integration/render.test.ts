@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach, afterEach } from 'vitest';
-import { execSync } from 'child_process';
+import { execSync, spawn } from 'child_process';
 import { writeFileSync, unlinkSync, existsSync, mkdirSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
@@ -14,27 +14,27 @@ describe('CLI', () => {
     }
   });
 
-  afterEach(() => {
-    // Clean up test output files
-    try {
-      const files = ['test.svg', 'simple.svg', 'input.svg'];
-      files.forEach(file => {
-        const filePath = join(outputDir, file);
-        if (existsSync(filePath)) {
-          unlinkSync(filePath);
-        }
-      });
-      const infoFiles = ['test.ifgc', 'simple.ifgc', 'input.ifgc'];
-      infoFiles.forEach(file => {
-        const filePath = join(outputDir, file);
-        if (existsSync(filePath)) {
-          unlinkSync(filePath);
-        }
-      });
-    } catch {
-      // Ignore cleanup errors
-    }
-  });
+  // afterEach(() => {
+  //   // Clean up test output files
+  //   try {
+  //     const files = ['test.svg', 'simple.svg', 'input.svg'];
+  //     files.forEach(file => {
+  //       const filePath = join(outputDir, file);
+  //       if (existsSync(filePath)) {
+  //         unlinkSync(filePath);
+  //       }
+  //     });
+  //     const infoFiles = ['test.ifgc', 'simple.ifgc', 'input.ifgc'];
+  //     infoFiles.forEach(file => {
+  //       const filePath = join(outputDir, file);
+  //       if (existsSync(filePath)) {
+  //         unlinkSync(filePath);
+  //       }
+  //     });
+  //   } catch {
+  //     // Ignore cleanup errors
+  //   }
+  // });
 
   it('should render a simple infographic to SVG', () => {
     const inputFile = join(outputDir, 'input.ifgc');
@@ -99,7 +99,7 @@ data
     expect(existsSync(outputFile)).toBe(true);
   });
 
-  it('should read from stdin using echo pipe', () => {
+  it('should read from stdin using echo pipe', async () => {
     const outputFile = join(outputDir, 'stdin-test.svg');
     const input = `infographic list-row-simple-horizontal-arrow
 data
@@ -107,8 +107,33 @@ data
   items
     - label A
 `;
-    execSync(`echo "${input}" | ${CLI} -o ${outputFile}`, {
-      shell: '/bin/bash',
+
+    await new Promise<void>((resolve, reject) => {
+      const child = spawn('node', ['dist/cli.js', '-o', outputFile], {
+        stdio: ['pipe', 'pipe', 'pipe'],
+      });
+
+      let stdout = '';
+      let stderr = '';
+
+      child.stdout.on('data', (data) => {
+        stdout += data.toString();
+      });
+
+      child.stderr.on('data', (data) => {
+        stderr += data.toString();
+      });
+
+      child.on('close', (code) => {
+        if (code !== 0) {
+          reject(new Error(`Process exited with code ${code}: ${stderr}`));
+        } else {
+          resolve();
+        }
+      });
+
+      child.stdin.write(input);
+      child.stdin.end();
     });
 
     expect(existsSync(outputFile)).toBe(true);
@@ -174,19 +199,19 @@ describe('CLI with configuration', () => {
     }
   });
 
-  afterEach(() => {
-    try {
-      const files = ['theme-test.svg', 'config-test.svg', 'config.json', 'theme-test.ifgc', 'config-test.ifgc'];
-      files.forEach(file => {
-        const filePath = join(outputDir, file);
-        if (existsSync(filePath)) {
-          unlinkSync(filePath);
-        }
-      });
-    } catch {
-      // Ignore cleanup errors
-    }
-  });
+  // afterEach(() => {
+  //   try {
+  //     const files = ['theme-test.svg', 'config-test.svg', 'config.json', 'theme-test.ifgc', 'config-test.ifgc'];
+  //     files.forEach(file => {
+  //       const filePath = join(outputDir, file);
+  //       if (existsSync(filePath)) {
+  //         unlinkSync(filePath);
+  //       }
+  //     });
+  //   } catch {
+  //     // Ignore cleanup errors
+  //   }
+  // });
 
   it('should use custom theme when specified', () => {
     const inputFile = join(outputDir, 'theme-test.ifgc');
