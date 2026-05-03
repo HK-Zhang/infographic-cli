@@ -1,9 +1,9 @@
 {
-  "name": "infographic-cli",
-  "version": "0.5.1",
+  "name": "infog-cli",
+  "version": "0.0.1",
   "description": "Instantly create stunning SVG infographics from simple declarative syntax. Render from strings, files, or stdin.",
   "license": "MIT",
-  "author": "lyw405",
+  "author": "HK-Zhang",
   "type": "module",
   "bin": {
     "ifgc": "./dist/cli.js",
@@ -27,9 +27,9 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@antv/infographic": "^0.2.11",
-    "chalk": "^5.4.1",
-    "commander": "^12.1.0"
+    "@antv/infographic": "^0.2.18",
+    "chalk": "^5.6.2",
+    "commander": "^14.0.3"
   },
   "devDependencies": {
     "@types/node": "^24.12.2",
