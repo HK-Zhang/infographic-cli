@@ -1,4 +1,5 @@
 import fs from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
 import { renderToString } from '@antv/infographic/ssr';
 import { error, info, success } from '../utils/error.js';
 import { getInputData } from '../utils/input.js';
@@ -62,17 +63,6 @@ async function validateInputFile(input: string | undefined): Promise<void> {
     await fs.access(input);
   } catch {
     error(`Input file "${input}" doesn't exist`);
-  }
-}
-
-async function loadConfig(configFile: string | undefined): Promise<RenderConfig> {
-  if (!configFile) return {};
-
-  try {
-    const configContent = await fs.readFile(configFile, 'utf-8');
-    return JSON.parse(configContent) as RenderConfig;
-  } catch {
-    error(`Configuration file "${configFile}" is invalid or doesn't exist`);
   }
 }
 
@@ -163,6 +153,38 @@ async function prepareInputData(options: RenderOptions): Promise<string> {
   return inputData;
 }
 
+function validatePngRequirements(format: string, remoteApiHost: string | undefined): void {
+  if (format === 'png' && !remoteApiHost) {
+    error('Missing required option: --remote-api-host is required when output format is PNG.');
+  }
+}
+
+function buildRenderConfig(
+  configFile: string | undefined,
+  theme: string | undefined,
+): RenderConfig {
+  const config = loadConfigSync(configFile);
+
+  if (theme) {
+    config.theme = theme;
+  } else {
+    config.themeConfig = themeConfig;
+  }
+
+  return config;
+}
+
+function loadConfigSync(configFile: string | undefined): RenderConfig {
+  if (!configFile) return {};
+
+  try {
+    const configContent = readFileSync(configFile, 'utf-8');
+    return JSON.parse(configContent) as RenderConfig;
+  } catch {
+    error(`Configuration file "${configFile}" is invalid or doesn't exist`);
+  }
+}
+
 export async function renderCommand(options: RenderOptions): Promise<void> {
   const { input, output: userOutput, quiet, config: configFile, theme, remoteApiHost } = options;
 
@@ -174,18 +196,9 @@ export async function renderCommand(options: RenderOptions): Promise<void> {
   const rawOutput = resolveOutput(userOutput, input);
   const format = resolveFormat(options, rawOutput);
 
-  if (format === 'png' && !remoteApiHost) {
-    error('Missing required option: --remote-api-host is required when output format is PNG.');
-  }
+  validatePngRequirements(format, remoteApiHost);
 
-  const config = await loadConfig(configFile);
-
-  if (theme) {
-    config.theme = theme;
-  }else{
-    config.themeConfig = themeConfig;
-  }
-
+  const config = buildRenderConfig(configFile, theme);
   const output = resolveOutputFormat(rawOutput, format);
   const inputData = await prepareInputData(options);
 
