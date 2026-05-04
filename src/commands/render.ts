@@ -28,13 +28,18 @@ const themeConfig = {
     '#e1f000',
     '#9fffb2',
   ],
+  base:{
+    text:{
+      "font-family": 'Arial',
+    }
+  },
   item: {
     label: {
-      'font-size': 10,
+      // 'font-size': 10,
       'line-height': 1
     },
     desc: {
-      'font-size': 8,
+      // 'font-size': 8,
       'line-height': 1
     }
   }
