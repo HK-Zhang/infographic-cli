@@ -7,3 +7,4 @@ dist-types/
 *.svg
 test-ssr.js
 tsconfig.tsbuildinfo
+.env

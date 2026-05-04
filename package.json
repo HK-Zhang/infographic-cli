@@ -1,6 +1,6 @@
 {
   "name": "infog-cli",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Instantly create stunning SVG infographics from simple declarative syntax. Render from strings, files, or stdin.",
   "license": "MIT",
   "author": "HK-Zhang",
@@ -43,12 +43,12 @@
     "vitest": "^3.2.4"
   },
   "overrides": {
-    "tar":"^7.5.13",
-    "minimatch":"^3.1.5",
-    "lodash-es":"^4.18.1",
-    "lodash":"^4.18.1",
-    "postcss":"^8.5.13",
-    "brace-expansion":"^1.1.14"
+    "tar": "^7.5.13",
+    "minimatch": "^3.1.5",
+    "lodash-es": "^4.18.1",
+    "lodash": "^4.18.1",
+    "postcss": "^8.5.13",
+    "brace-expansion": "^1.1.14"
   },
   "files": [
     "dist",

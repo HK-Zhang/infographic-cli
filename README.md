@@ -67,10 +67,12 @@ cat input.ifgc | ifgc -o output.svg
 | `-s, --string <content>` | Input .ifgc content as a string |
 | `-i, --input <file>` | Input .ifgc file |
 | `-o, --output <file>` | Output file (default: input.svg) |
+| `-f, --format <format>` | Output format: `png` or `svg` (default: `png`) |
 | `--background <color>` | Background color (default: transparent) |
 | `-c, --config <file>` | JSON configuration file |
 | `-t, --theme <name>` | Theme name |
 | `-q, --quiet` | Suppress log output |
+| `--remote-api-host <url>` | Remote API host for SVG to PNG conversion (required when format is `png`) |
 
 ### List Templates
 
@@ -158,7 +160,7 @@ data
 
 ## Output Format
 
-### SVG (Default)
+### SVG
 
 Infographic is a vector graphics format, perfect for:
 
@@ -167,17 +169,15 @@ Infographic is a vector graphics format, perfect for:
 - **Design tools** - Figma, Sketch, Illustrator
 - **Code documentation** - Docusaurus, VitePress, etc.
 
-### Converting to PNG
+### PNG
 
-If you need PNG for specific use cases, you can convert the SVG:
+PNG output requires a remote SVG-to-PNG conversion API. Provide the API host with `--remote-api-host`:
 
-**Online tools**:
-- [SVG to PNG](https://svgtopng.com/)
-- [CloudConvert](https://cloudconvert.com/svg-to-png)
+```bash
+ifgc -i input.ifgc -o output.png --remote-api-host https://api.example.com
+```
 
-**Command line** (requires additional tools):
-- ImageMagick: `convert output.svg output.png`
-- Node.js with sharp: `sharp('output.svg').png().toFile('output.png')`
+The remote API must expose a `POST /convert/svg-to-png` endpoint that accepts a multipart/form-data upload with an SVG file and returns a PNG image.
 
 ## Infographic Syntax
 
