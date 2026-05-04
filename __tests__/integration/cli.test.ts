@@ -14,6 +14,7 @@ describe('CLI Integration Tests', () => {
       expect(output).toContain('output');
       expect(output).toContain('format');
       expect(output).toContain('template');
+      expect(output).toContain('remote-api-host');
     });
   });
 

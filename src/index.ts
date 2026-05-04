@@ -26,6 +26,7 @@ program
   .option('-c, --config <file>', 'JSON configuration file')
   .option('-t, --theme <name>', 'Theme name')
   .option('-q, --quiet', 'Suppress log output')
+  .option('--remote-api-host <url>', 'Remote API host for SVG to PNG conversion (required when format is png)')
   .action(async (options: RenderOptions) => {
     try {
       await renderCommand(options);

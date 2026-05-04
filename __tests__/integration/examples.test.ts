@@ -14,6 +14,30 @@ const CLI = 'node dist/cli.js';
 const outputDir = join(tmpdir(), 'infographic-cli-examples');
 const examplesDir = join(testsDir, 'fixtures', 'examples');
 
+// Load REMOTE_API_HOST from .env file (project root)
+function loadEnvFile(): void {
+  try {
+    const envPath = join(process.cwd(), '.env');
+    const content = readFileSync(envPath, 'utf-8');
+    for (const line of content.split('\n')) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const eqIndex = trimmed.indexOf('=');
+      if (eqIndex > 0) {
+        const key = trimmed.slice(0, eqIndex).trim();
+        const value = trimmed.slice(eqIndex + 1).trim();
+        process.env[key] = value;
+      }
+    }
+  } catch {
+    // .env file may not exist; rely on existing env vars
+  }
+}
+
+loadEnvFile();
+
+const REMOTE_API_HOST = process.env.REMOTE_API_HOST ?? '';
+
 // List of example files to test
 const exampleFiles = [
   '01-basic-list.txt',
@@ -85,7 +109,7 @@ describe('SSR Examples Tests', () => {
       expect(input.length).toBeGreaterThan(0);
 
       // Render the infographic as PNG (default format)
-      execSync(CLI + ` -i ${inputFile} -o ${outputFile}`);
+      execSync(CLI + ` -i ${inputFile} -o ${outputFile} --remote-api-host ${REMOTE_API_HOST}`);
 
       // Verify output file was created
       expect(existsSync(outputFile)).toBe(true);
@@ -138,7 +162,7 @@ describe('Visual Output Preview', () => {
     const inputFile = join(examplesDir, '01-basic-list.txt');
     const outputFile = join(outputDir, '01-basic-list.png');
 
-    execSync(CLI + ` -i ${inputFile} -o ${outputFile}`);
+    execSync(CLI + ` -i ${inputFile} -o ${outputFile} --remote-api-host ${REMOTE_API_HOST}`);
 
     const pngBuffer = readFileSync(outputFile);
 

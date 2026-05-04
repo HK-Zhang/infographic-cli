@@ -7,6 +7,30 @@ import { tmpdir } from 'os';
 const CLI = 'node dist/cli.js';
 const outputDir = join(tmpdir(), 'infographic-cli-tests');
 
+// Load REMOTE_API_HOST from .env file (project root)
+function loadEnvFile(): void {
+  try {
+    const envPath = join(process.cwd(), '.env');
+    const content = readFileSync(envPath, 'utf-8');
+    for (const line of content.split('\n')) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const eqIndex = trimmed.indexOf('=');
+      if (eqIndex > 0) {
+        const key = trimmed.slice(0, eqIndex).trim();
+        const value = trimmed.slice(eqIndex + 1).trim();
+        process.env[key] = value;
+      }
+    }
+  } catch {
+    // .env file may not exist; rely on existing env vars
+  }
+}
+
+loadEnvFile();
+
+const REMOTE_API_HOST = process.env.REMOTE_API_HOST ?? '';
+
 describe('CLI', () => {
   beforeEach(() => {
     if (!existsSync(outputDir)) {
@@ -53,7 +77,7 @@ data
 `;
     writeFileSync(inputFile, input);
 
-    execSync(CLI + ` -i ${inputFile} -o ${outputFile}`);
+    execSync(CLI + ` -i ${inputFile} -o ${outputFile} --remote-api-host ${REMOTE_API_HOST}`);
 
     expect(existsSync(outputFile)).toBe(true);
 
@@ -105,11 +129,29 @@ data
 `;
     writeFileSync(inputFile, input);
 
-    execSync(CLI + ` -i ${inputFile} -o ${outputFile}`);
+    execSync(CLI + ` -i ${inputFile} -o ${outputFile} --remote-api-host ${REMOTE_API_HOST}`);
 
     expect(existsSync(outputFile)).toBe(true);
     const pngBuffer = readFileSync(outputFile);
     expect(pngBuffer[0]).toBe(0x89);
+  });
+
+  it('should error when PNG format is requested without --remote-api-host', () => {
+    const inputFile = join(outputDir, 'missing-api.ifgc');
+    const outputFile = join(outputDir, 'missing-api.png');
+    const input = `infographic list-row-simple-horizontal-arrow
+data
+  title Missing API
+  items
+    - label A
+`;
+    writeFileSync(inputFile, input);
+
+    expect(() => {
+      execSync(CLI + ` -i ${inputFile} -o ${outputFile}`, {
+        encoding: 'utf-8',
+      });
+    }).toThrow();
   });
 
   it('should infer output format from file extension', () => {
@@ -123,7 +165,7 @@ data
 `;
     writeFileSync(inputFile, input);
 
-    execSync(CLI + ` -i ${inputFile} -o ${outputFile}`);
+    execSync(CLI + ` -i ${inputFile} -o ${outputFile} --remote-api-host ${REMOTE_API_HOST}`);
 
     expect(existsSync(outputFile)).toBe(true);
     const pngBuffer = readFileSync(outputFile);
@@ -158,7 +200,7 @@ data
 `;
 
     await new Promise<void>((resolve, reject) => {
-      const child = spawn('node', ['dist/cli.js', '-o', outputFile], {
+      const child = spawn('node', ['dist/cli.js', '-o', outputFile, '--remote-api-host', REMOTE_API_HOST], {
         stdio: ['pipe', 'pipe', 'pipe'],
       });
 
@@ -202,7 +244,7 @@ data
     writeFileSync(inputFile, input);
 
     const output = execSync(
-      CLI + ` -i ${inputFile} -o ${outputFile} --quiet`,
+      CLI + ` -i ${inputFile} -o ${outputFile} --quiet --remote-api-host ${REMOTE_API_HOST}`,
       { encoding: 'utf-8' }
     );
 
@@ -232,7 +274,7 @@ data
 `;
     writeFileSync(inputFile, input);
 
-    execSync(CLI + ` -i ${inputFile} -o ${outputFile}`);
+    execSync(CLI + ` -i ${inputFile} -o ${outputFile} --remote-api-host ${REMOTE_API_HOST}`);
 
     expect(existsSync(outputFile)).toBe(true);
     const pngBuffer = readFileSync(outputFile);
@@ -275,7 +317,7 @@ data
 `;
     writeFileSync(inputFile, input);
 
-    execSync(CLI + ` -i ${inputFile} -o ${outputFile} --theme hand-drawn`);
+    execSync(CLI + ` -i ${inputFile} -o ${outputFile} --theme hand-drawn --remote-api-host ${REMOTE_API_HOST}`);
 
     expect(existsSync(outputFile)).toBe(true);
     const pngBuffer = readFileSync(outputFile);
@@ -298,7 +340,7 @@ data
     writeFileSync(configFile, JSON.stringify(config));
 
     execSync(
-      CLI + ` -i ${inputFile} -o ${outputFile} --config ${configFile}`
+      CLI + ` -i ${inputFile} -o ${outputFile} --config ${configFile} --remote-api-host ${REMOTE_API_HOST}`
     );
 
     expect(existsSync(outputFile)).toBe(true);

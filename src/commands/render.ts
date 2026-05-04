@@ -1,6 +1,5 @@
 import fs from 'node:fs/promises';
 import { renderToString } from '@antv/infographic/ssr';
-import { chromium } from 'playwright';
 import { error, info, success } from '../utils/error.js';
 import { getInputData } from '../utils/input.js';
 import { getDefaultOutput, writeOutput } from '../utils/output.js';
@@ -14,6 +13,7 @@ export interface RenderOptions {
   quiet?: boolean;
   config?: string;
   theme?: string;
+  remoteApiHost?: string;
 }
 
 const themeConfig = {
@@ -120,26 +120,30 @@ function resolveOutputFormat(output: string, format: string): string {
   return `${output}${ext}`;
 }
 
-async function convertSvgToPng(svgString: string): Promise<Buffer> {
-  const browser = await chromium.launch();
-  try {
-    const page = await browser.newPage();
-    const html = `<!DOCTYPE html>
-<html><body style="margin:0;padding:0">${svgString}</body></html>`;
-    await page.setContent(html, { waitUntil: 'networkidle' });
+async function convertSvgToPng(svgString: string, remoteApiHost: string): Promise<Buffer> {
+  const url = `${remoteApiHost.replace(/\/$/, '')}/convert/svg-to-png`;
 
-    const svgElement = page.locator('svg');
-    await svgElement.waitFor();
+  const formData = new FormData();
+  const svgBlob = new Blob([svgString], { type: 'image/svg+xml' });
+  formData.append('file', svgBlob, 'input.svg');
 
-    const screenshot = await svgElement.screenshot({
-      type: 'png',
-      omitBackground: false,
-    });
+  const response = await fetch(url, {
+    method: 'POST',
+    body: formData,
+  });
 
-    return screenshot;
-  } finally {
-    await browser.close();
+  if (!response.ok) {
+    const statusText = response.statusText || 'Unknown error';
+    if (response.status === 400) {
+      throw new Error(`Invalid input: ${statusText}`);
+    } else if (response.status === 500) {
+      throw new Error(`Conversion failed: ${statusText}`);
+    }
+    throw new Error(`Remote API error (${response.status}): ${statusText}`);
   }
+
+  const arrayBuffer = await response.arrayBuffer();
+  return Buffer.from(arrayBuffer);
 }
 
 async function prepareInputData(options: RenderOptions): Promise<string> {
@@ -160,12 +164,19 @@ async function prepareInputData(options: RenderOptions): Promise<string> {
 }
 
 export async function renderCommand(options: RenderOptions): Promise<void> {
-  const { input, output: userOutput, quiet, config: configFile, theme } = options;
+  const { input, output: userOutput, quiet, config: configFile, theme, remoteApiHost } = options;
 
   const log = quiet ? () => {} : info;
 
   validateOptions(options);
   await validateInputFile(input);
+
+  const rawOutput = resolveOutput(userOutput, input);
+  const format = resolveFormat(options, rawOutput);
+
+  if (format === 'png' && !remoteApiHost) {
+    error('Missing required option: --remote-api-host is required when output format is PNG.');
+  }
 
   const config = await loadConfig(configFile);
 
@@ -175,8 +186,6 @@ export async function renderCommand(options: RenderOptions): Promise<void> {
     config.themeConfig = themeConfig;
   }
 
-  const rawOutput = resolveOutput(userOutput, input);
-  const format = resolveFormat(options, rawOutput);
   const output = resolveOutputFormat(rawOutput, format);
   const inputData = await prepareInputData(options);
 
@@ -186,7 +195,7 @@ export async function renderCommand(options: RenderOptions): Promise<void> {
     const svgString = await renderToString(inputData, config);
 
     if (format === 'png') {
-      const pngBuffer = await convertSvgToPng(svgString);
+      const pngBuffer = await convertSvgToPng(svgString, remoteApiHost!);
       await writeOutput(output, pngBuffer);
     } else {
       await writeOutput(output, svgString);
