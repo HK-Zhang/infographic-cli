@@ -12,6 +12,7 @@ describe('CLI Integration Tests', () => {
       expect(output).toContain('Command-line interface for AntV Infographic');
       expect(output).toContain('input');
       expect(output).toContain('output');
+      expect(output).toContain('format');
       expect(output).toContain('template');
     });
   });

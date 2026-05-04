@@ -51,7 +51,7 @@ describe('SSR Examples Tests', () => {
   // });
 
   for (const file of exampleFiles) {
-    it(`should render ${file}`, () => {
+    it(`should render ${file} to SVG`, () => {
       const inputFile = join(examplesDir, file);
       const svgFileName = file.replace('.txt', '.svg');
       const outputFile = join(outputDir, svgFileName);
@@ -60,8 +60,8 @@ describe('SSR Examples Tests', () => {
       const input = readFileSync(inputFile, 'utf-8');
       expect(input.length).toBeGreaterThan(0);
 
-      // Render the infographic
-      execSync(CLI + ` -i ${inputFile} -o ${outputFile}`);
+      // Render the infographic as SVG
+      execSync(CLI + ` -i ${inputFile} -o ${outputFile} --format svg`);
 
       // Verify output file was created
       expect(existsSync(outputFile)).toBe(true);
@@ -72,8 +72,30 @@ describe('SSR Examples Tests', () => {
       // Verify it's valid SVG
       expect(svgContent).toContain('<svg');
       expect(svgContent).toContain('</svg>');
-      // expect(svgContent).toContain('<?xml version="1.0"');
       expect(svgContent.length).toBeGreaterThan(1000);
+    });
+
+    it(`should render ${file} to PNG`, () => {
+      const inputFile = join(examplesDir, file);
+      const pngFileName = file.replace('.txt', '.png');
+      const outputFile = join(outputDir, pngFileName);
+
+      // Read input to verify it exists
+      const input = readFileSync(inputFile, 'utf-8');
+      expect(input.length).toBeGreaterThan(0);
+
+      // Render the infographic as PNG (default format)
+      execSync(CLI + ` -i ${inputFile} -o ${outputFile}`);
+
+      // Verify output file was created
+      expect(existsSync(outputFile)).toBe(true);
+
+      // Verify it's valid PNG
+      const pngBuffer = readFileSync(outputFile);
+      expect(pngBuffer[0]).toBe(0x89);
+      expect(pngBuffer[1]).toBe(0x50);
+      expect(pngBuffer[2]).toBe(0x4E);
+      expect(pngBuffer[3]).toBe(0x47);
     });
   }
 });
@@ -85,11 +107,11 @@ describe('Visual Output Preview', () => {
     }
   });
 
-  it('should show a sample rendered output', () => {
+  it('should show a sample SVG rendered output', () => {
     const inputFile = join(examplesDir, '01-basic-list.txt');
     const outputFile = join(outputDir, '01-basic-list.svg');
 
-    execSync(CLI + ` -i ${inputFile} -o ${outputFile}`);
+    execSync(CLI + ` -i ${inputFile} -o ${outputFile} --format svg`);
 
     const content = readFileSync(outputFile, 'utf-8');
 
@@ -110,6 +132,31 @@ describe('Visual Output Preview', () => {
     // Verify it's valid SVG
     expect(content).toContain('<svg');
     expect(content).toContain('</svg>');
+  });
+
+  it('should show a sample PNG rendered output', () => {
+    const inputFile = join(examplesDir, '01-basic-list.txt');
+    const outputFile = join(outputDir, '01-basic-list.png');
+
+    execSync(CLI + ` -i ${inputFile} -o ${outputFile}`);
+
+    const pngBuffer = readFileSync(outputFile);
+
+    console.log('\n' + '='.repeat(60));
+    console.log('📊 Sample Infographic Output (01-basic-list.png)');
+    console.log('='.repeat(60));
+    console.log('\nPNG file generated successfully!\n');
+
+    console.log(`File size: ${pngBuffer.length} bytes`);
+    console.log('View the file to see the complete PNG infographic\n');
+
+    console.log('='.repeat(60));
+
+    // Verify it's valid PNG
+    expect(pngBuffer[0]).toBe(0x89);
+    expect(pngBuffer[1]).toBe(0x50);
+    expect(pngBuffer[2]).toBe(0x4E);
+    expect(pngBuffer[3]).toBe(0x47);
   });
 
   it('should list all example files', () => {

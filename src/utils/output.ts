@@ -18,8 +18,8 @@ export function getDefaultOutput(
   input: string | undefined,
 ): string {
   if (input) {
-    const inputWithoutExt = input.replace(/\.(info|txt)$/, '');
-    return `${inputWithoutExt}.svg`;
+    const inputWithoutExt = input.replace(/\.(info|txt|svg|png)$/, '');
+    return `${inputWithoutExt}.png`;
   }
-  return 'out.svg';
+  return 'out.png';
 }

@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import { renderToString } from '@antv/infographic/ssr';
+import { chromium } from 'playwright';
 import { error, info, success } from '../utils/error.js';
 import { getInputData } from '../utils/input.js';
 import { getDefaultOutput, writeOutput } from '../utils/output.js';
@@ -8,6 +9,7 @@ export interface RenderOptions {
   input?: string;
   string?: string;
   output?: string;
+  format?: string;
   background?: string;
   quiet?: boolean;
   config?: string;
@@ -82,6 +84,64 @@ function resolveOutput(userOutput: string | undefined, input: string | undefined
   return getDefaultOutput(actualInput);
 }
 
+function resolveFormat(options: RenderOptions, output: string): string {
+  // If explicitly specified, use it
+  if (options.format) {
+    const format = options.format.toLowerCase();
+    if (format !== 'png' && format !== 'svg') {
+      error(`Unsupported format "${format}". Use "png" or "svg".`);
+    }
+    return format;
+  }
+
+  // Infer from output file extension
+  if (output && output !== '-') {
+    if (output.toLowerCase().endsWith('.svg')) return 'svg';
+    if (output.toLowerCase().endsWith('.png')) return 'png';
+  }
+
+  // Default to png
+  return 'png';
+}
+
+function resolveOutputFormat(output: string, format: string): string {
+  if (output === '/dev/stdout') return output;
+
+  // If output already has the correct extension, use it
+  const ext = `.${format.toLowerCase()}`;
+  if (output.toLowerCase().endsWith(ext)) return output;
+
+  // If output has a different image extension, replace it
+  if (/\.(svg|png)$/i.test(output)) {
+    return output.replace(/\.(svg|png)$/i, ext);
+  }
+
+  // Otherwise append the format extension
+  return `${output}${ext}`;
+}
+
+async function convertSvgToPng(svgString: string): Promise<Buffer> {
+  const browser = await chromium.launch();
+  try {
+    const page = await browser.newPage();
+    const html = `<!DOCTYPE html>
+<html><body style="margin:0;padding:0">${svgString}</body></html>`;
+    await page.setContent(html, { waitUntil: 'networkidle' });
+
+    const svgElement = page.locator('svg');
+    await svgElement.waitFor();
+
+    const screenshot = await svgElement.screenshot({
+      type: 'png',
+      omitBackground: false,
+    });
+
+    return screenshot;
+  } finally {
+    await browser.close();
+  }
+}
+
 async function prepareInputData(options: RenderOptions): Promise<string> {
   let inputData: string;
 
@@ -115,7 +175,9 @@ export async function renderCommand(options: RenderOptions): Promise<void> {
     config.themeConfig = themeConfig;
   }
 
-  const output = resolveOutput(userOutput, input);
+  const rawOutput = resolveOutput(userOutput, input);
+  const format = resolveFormat(options, rawOutput);
+  const output = resolveOutputFormat(rawOutput, format);
   const inputData = await prepareInputData(options);
 
   log('Rendering infographic...');
@@ -123,7 +185,12 @@ export async function renderCommand(options: RenderOptions): Promise<void> {
   try {
     const svgString = await renderToString(inputData, config);
 
-    await writeOutput(output, svgString);
+    if (format === 'png') {
+      const pngBuffer = await convertSvgToPng(svgString);
+      await writeOutput(output, pngBuffer);
+    } else {
+      await writeOutput(output, svgString);
+    }
 
     if (output !== '/dev/stdout') {
       success(`Infographic rendered to ${output}`);

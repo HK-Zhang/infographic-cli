@@ -20,7 +20,8 @@ program
 program
   .option('-i, --input <file>', 'Input .ifgc file (omit to read from stdin)')
   .option('-s, --string <content>', 'Input .ifgc content as a string (use \\n for newlines)')
-  .option('-o, --output <file>', 'Output file (default: input file with .svg extension)')
+  .option('-o, --output <file>', 'Output file (default: input file with .png extension)')
+  .option('-f, --format <format>', 'Output format: png or svg (default: png)')
   .option('--background <color>', 'Background color (default: transparent)', 'transparent')
   .option('-c, --config <file>', 'JSON configuration file')
   .option('-t, --theme <name>', 'Theme name')
