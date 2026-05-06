@@ -42,7 +42,7 @@ const themeConfig = {
       'line-height': 1
     },
     desc: {
-      // 'font-size': 8,
+      'font-size': 8,
       'line-height': 1
     }
   }
